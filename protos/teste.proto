@@ -1,0 +1,11 @@
+syntax="proto3";
+
+service TestService{
+  rpc HelloWorld (HelloWorldRequest) returns (HelloWorldResponse);
+}
+
+message HelloWorldRequest{}
+
+message HelloWorldResponse{
+  bool hello = 1;
+}
