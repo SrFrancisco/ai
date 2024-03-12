@@ -1,4 +1,12 @@
 import grpc
+import logging
+import os
+# Suppress TensorFlow INFO and WARNING messages
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+
+# Suppress TF-TRT Warning
+logging.getLogger('tensorflow.compiler.tf2tensorrt').setLevel(logging.ERROR)
+from concurrent import futures
 import teste_pb2
 import teste_pb2_grpc
 import tensorflow as tf
@@ -6,12 +14,13 @@ import numpy as np
 from PIL import Image
 from io import BytesIO
 
+
 classes = ['Cardboard', 'Glass', 'Metal', 'Plastic']
 
 class TestService(teste_pb2_grpc.TestService):
     def __init__(self, model_path) -> None:
         super().__init__()
-        self.model = tf.keras.models.load_model('simple_keras') # model is only loaded once
+        self.model = tf.keras.models.load_model('../simple_keras.keras')
 
     def PredictImage(self, request, context):
         image_data = request.image_data
@@ -46,10 +55,10 @@ def postprocess_prediction(prediction):
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    model_path = 'path/to/your/pretrained_model.h5'
+    model_path = '../simple_keras.keras'
     teste_pb2_grpc.add_TestServiceServicer_to_server(TestService(model_path), server)
     print("Started Server on")
-    server.add_insecure_port("[::]:5004")
+    server.add_insecure_port("localhost:5004")
     server.start()
     server.wait_for_termination()
 
