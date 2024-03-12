@@ -1,11 +1,13 @@
 syntax="proto3";
 
-service TestService{
-  rpc HelloWorld (HelloWorldRequest) returns (HelloWorldResponse);
+service TestService {
+  rpc PredictImage (ImageRequest) returns (ImageResponse);
 }
 
-message HelloWorldRequest{}
+message ImageRequest {
+  bytes image_data = 1;
+}
 
-message HelloWorldResponse{
-  bool hello = 1;
+message ImageResponse {
+  string prediction = 1;
 }
