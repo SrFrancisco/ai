@@ -1,7 +1,8 @@
-syntax="proto3";
+syntax = "proto3";
 
 service TestService {
   rpc PredictImage (ImageRequest) returns (ImageResponse);
+  rpc RetrainModel (RetrainRequest) returns (RetrainResponse);
 }
 
 message ImageRequest {
@@ -10,4 +11,13 @@ message ImageRequest {
 
 message ImageResponse {
   string prediction = 1;
+}
+
+message RetrainRequest {
+  bytes image_data = 1;
+  string label = 2;
+}
+
+message RetrainResponse {
+  string message = 1;
 }

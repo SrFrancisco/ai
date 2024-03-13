@@ -10,12 +10,9 @@ from concurrent import futures
 import teste_pb2
 import teste_pb2_grpc
 import tensorflow as tf
-import numpy as np
 from PIL import Image
 from io import BytesIO
-
-
-classes = ['Cardboard', 'Glass', 'Metal', 'Plastic']
+from serverService import preprocess_image, postprocess_prediction
 
 class TestService(teste_pb2_grpc.TestService):
     def __init__(self, model_path) -> None:
@@ -33,25 +30,27 @@ class TestService(teste_pb2_grpc.TestService):
         predicted_label = postprocess_prediction(prediction)
 
         return teste_pb2.ImageResponse(prediction=predicted_label)
+    
+    def RetrainModel(self, request, context):
+        image_data = request.image_data
+        label = request.label
+        image = Image.open(BytesIO(image_data))
 
-def preprocess_image(image):    
-    image = image.resize((256, 256))
-    img_array = np.array(image)
-    img_array = np.expand_dims(img_array, axis=0)
+        # Assuming you have a function to add this image and label to your dataset
+        add_image_and_label_to_dataset(image, label)
 
-    return img_array
+        # Assuming you have a function to retrain the model
+        retrain_model()
 
-def postprocess_prediction(prediction):
-    prediction_probabilities = prediction[0] * 100
-    predicted_class_index = np.argmax(prediction)
-    predicted_class = classes[predicted_class_index]
-    predicted_confidence = prediction[0][predicted_class_index] * 100
+        return teste_pb2.RetrainResponse(message="Model retrained successfully.")
 
-    prediction_string = f"Prediction probabilities: {prediction_probabilities}\n"
-    prediction_string += f"Classes: {classes}\n"
-    prediction_string += f"Predicted class: {predicted_class} ({predicted_confidence}%)\n"
+    def add_image_and_label_to_dataset(image, label):
+        # Logic to add the image and label to your dataset goes here
+        pass
 
-    return prediction_string
+    def retrain_model():
+        # Logic to retrain your model goes here
+        pass
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
