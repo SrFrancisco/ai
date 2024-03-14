@@ -1,28 +1,66 @@
 import grpc
 import teste_pb2
 import teste_pb2_grpc
+import picamera
+import io
+from gpiozero import Button
+from clientService import *
+
+# Define GPIO pin numbers 
+CAPTURE_BUTTON_PIN = 23  
+RETRAIN_BUTTON_PIN = 18  
+LED_RED_PIN = 14
+LED_GREEN_PIN = 15
+LED_BLUE_PIN = 18
+
+# Define prediction threshold
+PREDICTION_THRESHOLD = 0.7
+
+CLASS_TO_COLOR = {
+    "Cardboard": (1, 0, 0),  
+    "Glass": (0, 1, 0),      
+    "Metal": (0, 0, 1),
+    "Plastic": (1, 1, 0)
+}
 
 def main():
     with grpc.insecure_channel("localhost:5004") as channel:
         stub = teste_pb2_grpc.TestServiceStub(channel)
-        while True:
-            user_input = input("Enter 'A' to retrain the model: ")
-            if user_input == 'A':
-                image_data = read_image_as_bytes('../assets/glass3.jpeg')  # Change to what camera gives us
-                label = "cardboard" # Change to input catched by the sensor on to which bin the trash corresponds to
-                request = teste_pb2.RetrainRequest(image_data=image_data, label=label)
-                response = stub.RetrainModel(request)
-                print(response.message)
+        
+        # Create Button objects
+        capture_button = Button(CAPTURE_BUTTON_PIN)
+        retrain_button = Button(RETRAIN_BUTTON_PIN)
+        # Create RGBLED object
+        rgb_led = RGBLED(red=LED_RED_PIN, green=LED_GREEN_PIN, blue=LED_BLUE_PIN)
+        
+        capture_button.wait_for_press()
+        
+        # Capture the image
+        image_data = capture_image_as_bytes()
+        
+        # Predict the image
+        prediction = predict_image(stub, image_data)
+        print("Predicted class:", prediction)
+        
+        if prediction.confidence >= PREDICTION_THRESHOLD and prediction.label in CLASS_TO_COLOR:
+            rgb_led.color = CLASS_TO_COLOR[prediction.label]
+        else:
+            rgb_led.color = (0, 0, 0)  # Turn off LED
+            
+        # If prediction accuracy is below threshold, ask if uer wants to retrain the model
+        if prediction.confidence < PREDICTION_THRESHOLD:
+            print("Prediction accuracy is below threshold.")
+            print("Press the retrain button within 5 seconds to retrain the model.")
+            
+            # Wait for the retrain button press within 5 seconds
+            if retrain_button.wait_for_press(timeout=5):
+                # Retrain the model using the captured image
+                retrain_model(stub, image_data)
+                print("Model retrained successfully.")
             else:
-                image_data = read_image_as_bytes('../assets/glass3.jpeg')  # Change to what camera gives us
-                request = teste_pb2.ImageRequest(image_data=image_data)
-                response = stub.PredictImage(request)
-                print("Predicted class:", response.prediction)
-
-def read_image_as_bytes(file_path):
-    with open(file_path, 'rb') as f:
-        image_bytes = f.read()
-    return image_bytes
+                print("Retrain option not selected.")
+        else:
+            print("Prediction accuracy is above threshold. No retraining needed.")
 
 if __name__ == "__main__":
     main()

@@ -15,8 +15,12 @@ def postprocess_prediction(prediction):
     predicted_class = classes[predicted_class_index]
     predicted_confidence = prediction[0][predicted_class_index] * 100
 
-    prediction_string = f"Prediction probabilities: {prediction_probabilities}\n"
-    prediction_string += f"Classes: {classes}\n"
-    prediction_string += f"Predicted class: {predicted_class} ({predicted_confidence}%)\n"
+    return predicted_class, predicted_confidence
 
-    return prediction_string
+def add_image_and_label_to_dataset(image, label):
+        # Logic to add the image and label to your dataset goes here
+        pass
+
+def retrain_model():
+    # Logic to retrain your model goes here
+    pass

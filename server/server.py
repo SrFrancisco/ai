@@ -12,12 +12,12 @@ import teste_pb2_grpc
 import tensorflow as tf
 from PIL import Image
 from io import BytesIO
-from serverService import preprocess_image, postprocess_prediction
+from serverService import *
 
 class TestService(teste_pb2_grpc.TestService):
     def __init__(self, model_path) -> None:
         super().__init__()
-        self.model = tf.keras.models.load_model('../simple_keras.keras')
+        self.model = tf.keras.models.load_model(model_path)
 
     def PredictImage(self, request, context):
         image_data = request.image_data
@@ -27,30 +27,20 @@ class TestService(teste_pb2_grpc.TestService):
 
         prediction = self.model.predict(image) # Predict
         
-        predicted_label = postprocess_prediction(prediction)
+        predicted_class, predicted_accuracy = postprocess_prediction(prediction)
 
-        return teste_pb2.ImageResponse(prediction=predicted_label)
+        return teste_pb2.ImageResponse(label=predicted_class, confidence=predicted_accuracy)
     
     def RetrainModel(self, request, context):
         image_data = request.image_data
         label = request.label
         image = Image.open(BytesIO(image_data))
 
-        # Assuming you have a function to add this image and label to your dataset
         add_image_and_label_to_dataset(image, label)
 
-        # Assuming you have a function to retrain the model
         retrain_model()
 
         return teste_pb2.RetrainResponse(message="Model retrained successfully.")
-
-    def add_image_and_label_to_dataset(image, label):
-        # Logic to add the image and label to your dataset goes here
-        pass
-
-    def retrain_model():
-        # Logic to retrain your model goes here
-        pass
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
