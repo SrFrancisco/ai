@@ -5,6 +5,25 @@ import picamera
 import io
 from gpiozero import Button
 
+import subprocess
+
+import subprocess
+
+def capture_image():
+    command = ["fswebcam", "-r", "256x256", "--no-banner", "image1.jpg"]
+    
+    try:
+        subprocess.run(command, check=True)
+        print("Image captured successfully.")
+        
+        # Read the captured image file as bytes
+        with open("image1.jpg", "rb") as f:
+            image_bytes = f.read()
+        
+        return image_bytes
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+
 def capture_image_as_bytes():
     with picamera.PiCamera() as camera:
         stream = io.BytesIO()

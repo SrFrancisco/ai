@@ -18,8 +18,8 @@ def postprocess_prediction(prediction):
     return predicted_class, predicted_confidence
 
 def add_image_and_label_to_dataset(image, label):
-        # Logic to add the image and label to your dataset goes here
-        pass
+    # Logic to add the image and label to your dataset goes here
+    pass
 
 def retrain_model():
     # Logic to retrain your model goes here
