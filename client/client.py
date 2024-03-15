@@ -3,7 +3,7 @@ import teste_pb2
 import teste_pb2_grpc
 #import picamera
 import io
-from gpiozero import Button, RGBLED, DistanceSensor
+from gpiozero import Button, RGBLED, DistanceSensor,Servo
 from clientService import *
 from time import sleep
 
@@ -36,6 +36,8 @@ def main():
         rgb_led = RGBLED(red=LED_RED_PIN, green=LED_GREEN_PIN, blue=LED_BLUE_PIN)
         # Create DistanceSensor object
         ultrasonic = DistanceSensor(echo=17, trigger=4)
+        # Create Servo object
+        servo = Servo(19)
 
         while True:
             capture_button.wait_for_press()
@@ -53,7 +55,6 @@ def main():
                 sleep(2)
             else:
                 rgb_led.color = (0, 0, 0)  # Turn off LED
-                
             # If prediction accuracy is below threshold, ask if uer wants to retrain the model
             if prediction.confidence < PREDICTION_THRESHOLD:
                 print("Prediction accuracy is below threshold.")
@@ -61,11 +62,17 @@ def main():
                 
                 # Wait for the retrain button press within 5 seconds
                 if capture_button.wait_for_press(timeout=5):
+                    servo.max()
+                    sleep(5)
+                    servo.min()
                     distance = track_distance(ultrasonic)
                     label = perform_action(distance)
                     retrain_model(stub, image_data, label)
                     print("Model retrained successfully.")
                 else:
+                    servo.max()
+                    sleep(5)
+                    servo.min()
                     print("Retrain option not selected.")
             else:
                 print("Prediction accuracy is above threshold. No retraining needed.")
