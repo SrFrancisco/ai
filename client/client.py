@@ -3,7 +3,7 @@ import teste_pb2
 import teste_pb2_grpc
 #import picamera
 import io
-from gpiozero import Button, RGBLED
+from gpiozero import Button, RGBLED, DistanceSensor
 from clientService import *
 from time import sleep
 
@@ -16,7 +16,7 @@ LED_GREEN_PIN = 13
 LED_BLUE_PIN = 12
 
 # Define prediction threshold
-PREDICTION_THRESHOLD = 0.7
+PREDICTION_THRESHOLD = 70.0
 
 CLASS_TO_COLOR = {
     "Cardboard": (0, 0, 1),  
@@ -34,37 +34,41 @@ def main():
         retrain_button = Button(RETRAIN_BUTTON_PIN)
         # Create RGBLED object
         rgb_led = RGBLED(red=LED_RED_PIN, green=LED_GREEN_PIN, blue=LED_BLUE_PIN)
-        
-        capture_button.wait_for_press()
-        
-        # Capture the image
-        image_data = capture_image() 
-        
-        # Predict the image
-        prediction = predict_image(stub, image_data)
-        print("Predicted class:", prediction)
-        
-        if prediction.confidence >= PREDICTION_THRESHOLD and prediction.label in CLASS_TO_COLOR:
-            print(">>>", prediction.label ,CLASS_TO_COLOR[prediction.label])
-            rgb_led.color = CLASS_TO_COLOR[prediction.label] 
-            sleep(2)
-        else:
-            rgb_led.color = (0, 0, 0)  # Turn off LED
+        # Create DistanceSensor object
+        ultrasonic = DistanceSensor(echo=17, trigger=4)
+
+        while True:
+            capture_button.wait_for_press()
             
-        # If prediction accuracy is below threshold, ask if uer wants to retrain the model
-        if prediction.confidence < PREDICTION_THRESHOLD:
-            print("Prediction accuracy is below threshold.")
-            print("Press the retrain button within 5 seconds to retrain the model.")
+            # Capture the image
+            image_data = capture_image() 
             
-            # Wait for the retrain button press within 5 seconds
-            if retrain_button.wait_for_press(timeout=5):
-                # Retrain the model using the captured image
-                retrain_model(stub, image_data)
-                print("Model retrained successfully.")
+            # Predict the image
+            prediction = predict_image(stub, image_data)
+            print("Predicted class:", prediction)
+            
+            if prediction.confidence >= PREDICTION_THRESHOLD and prediction.label in CLASS_TO_COLOR:
+                print(">>>", prediction.label ,CLASS_TO_COLOR[prediction.label])
+                rgb_led.color = CLASS_TO_COLOR[prediction.label] 
+                sleep(2)
             else:
-                print("Retrain option not selected.")
-        else:
-            print("Prediction accuracy is above threshold. No retraining needed.")
+                rgb_led.color = (0, 0, 0)  # Turn off LED
+                
+            # If prediction accuracy is below threshold, ask if uer wants to retrain the model
+            if prediction.confidence < PREDICTION_THRESHOLD:
+                print("Prediction accuracy is below threshold.")
+                print("Press the retrain button within 5 seconds to retrain the model.")
+                
+                # Wait for the retrain button press within 5 seconds
+                if capture_button.wait_for_press(timeout=5):
+                    distance = track_distance(ultrasonic)
+                    label = perform_action(distance)
+                    retrain_model(stub, image_data, label)
+                    print("Model retrained successfully.")
+                else:
+                    print("Retrain option not selected.")
+            else:
+                print("Prediction accuracy is above threshold. No retraining needed.")
 
 if __name__ == "__main__":
     main()

@@ -4,8 +4,8 @@ import teste_pb2_grpc
 #import picamera
 import io
 from gpiozero import Button
+from time import sleep
 
-import subprocess
 
 import subprocess
 
@@ -21,20 +21,39 @@ def capture_image():
             image_bytes = f.read()
         
         return image_bytes
+
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
 
 def capture_image_as_bytes():
-       pass 
+    pass 
 
 def predict_image(stub, image_data):
     request = teste_pb2.ImageRequest(image_data=image_data)
     return stub.PredictImage(request)
 
-#return response
 
-def retrain_model(stub, image_data):
-    label = input("Enter the correct label for the image: ")
+def retrain_model(stub, image_data,label):
     request = teste_pb2.RetrainRequest(image_data=image_data, label=label)
     response = stub.RetrainModel(request)
     print(response.message)
+
+def servo():
+    pass
+
+def perform_action(distance):
+    if distance <= 0.2: #change to correct range
+        return "Glass"
+    elif distance <= 0.4:
+        return "Cardboard"
+    else:
+        return "Plastic"
+    
+def track_distance(ultrasonic):
+    current_distance = ultrasonic.distance
+    while True:
+        new_distance = ultrasonic.distance
+        if abs(new_distance - current_distance) > 0.1:
+            return new_distance
+        sleep(0.1)  # Delay to avoid excessive polling
+        
