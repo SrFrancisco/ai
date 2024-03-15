@@ -52,10 +52,12 @@ def main():
             if prediction.confidence >= PREDICTION_THRESHOLD and prediction.label in CLASS_TO_COLOR:
                 print(">>>", prediction.label ,CLASS_TO_COLOR[prediction.label])
                 rgb_led.color = CLASS_TO_COLOR[prediction.label] 
+                servo.max()
                 sleep(2)
+                servo.min()
             else:
                 rgb_led.color = (0, 0, 0)  # Turn off LED
-            # If prediction accuracy is below threshold, ask if uer wants to retrain the model
+            # If prediction accuracy is below threshold, ask if user wants to retrain the model
             if prediction.confidence < PREDICTION_THRESHOLD:
                 print("Prediction accuracy is below threshold.")
                 print("Press the retrain button within 5 seconds to retrain the model.")
@@ -63,11 +65,10 @@ def main():
                 # Wait for the retrain button press within 5 seconds
                 if capture_button.wait_for_press(timeout=5):
                     servo.max()
-                    sleep(5)
-                    servo.min()
                     distance = track_distance(ultrasonic)
                     label = perform_action(distance)
                     retrain_model(stub, image_data, label)
+                    servo.min()
                     print("Model retrained successfully.")
                 else:
                     servo.max()
