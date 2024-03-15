@@ -53,7 +53,9 @@ def track_distance(ultrasonic):
     current_distance = ultrasonic.distance
     while True:
         new_distance = ultrasonic.distance
+        print(f"Distance: {new_distance:.2f} m")
         if abs(new_distance - current_distance) > 0.1:
+            print(f"ChangedDistance: {new_distance:.2f} m")
             return new_distance
         sleep(0.1)  # Delay to avoid excessive polling
         
