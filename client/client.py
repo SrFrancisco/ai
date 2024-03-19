@@ -33,7 +33,7 @@ class Bin:
 
     def open(self):
         self.servo.value = MIN_VAL_SERVO
-        sleep(1)
+        sleep(2)
     
     def close(self):
         self.servo.value = MAX_VAL_SERVO
