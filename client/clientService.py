@@ -10,7 +10,7 @@ from time import sleep
 import subprocess
 
 def capture_image():
-    command = ["fswebcam", "-r", "256x256", "--no-banner", "image1.jpg"]
+    command = ["fswebcam", "-r", "1280x720", "--no-banner", "image1.jpg"]
     
     try:
         subprocess.run(command, check=True)
@@ -32,14 +32,11 @@ def predict_image(stub, image_data):
     request = teste_pb2.ImageRequest(image_data=image_data)
     return stub.PredictImage(request)
 
-
 def retrain_model(stub, image_data,label):
     request = teste_pb2.RetrainRequest(image_data=image_data, label=label)
     response = stub.RetrainModel(request)
     print(response.message)
 
-def servo():
-    pass
 
 def perform_action(distance):
     if distance <= 0.2: #change to correct range

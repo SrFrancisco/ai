@@ -14,6 +14,8 @@ RETRAIN_BUTTON_PIN = 24
 LED_RED_PIN = 18
 LED_GREEN_PIN = 13
 LED_BLUE_PIN = 12
+MAX_VAL_SERVO = 0.9
+MIN_VAL_SERVO = 0.1
 
 # Define prediction threshold
 PREDICTION_THRESHOLD = 70.0
@@ -25,6 +27,17 @@ CLASS_TO_COLOR = {
     "Plastic": Color('orange') 
 }
 
+class Bin:
+    def __init__(self, servo):
+        self.servo = servo
+
+    def open(self):
+        self.servo.value = MIN_VAL_SERVO
+    
+    def close(self):
+        self.servo.value = MAX_VAL_SERVO
+
+
 def main():
     with grpc.insecure_channel("192.168.30.158:5004") as channel:
         stub = teste_pb2_grpc.TestServiceStub(channel)
@@ -32,12 +45,17 @@ def main():
         # Create Button objects
         capture_button = Button(CAPTURE_BUTTON_PIN)
         retrain_button = Button(RETRAIN_BUTTON_PIN)
+
         # Create RGBLED object
         rgb_led = RGBLED(red=LED_RED_PIN, green=LED_GREEN_PIN, blue=LED_BLUE_PIN)
+
         # Create DistanceSensor object
         ultrasonic = DistanceSensor(echo=17, trigger=4)
+
         # Create Servo object
         servo = Servo(19)
+
+        bin = Bin(servo)
 
         while True:
             capture_button.wait_for_press()
@@ -52,9 +70,13 @@ def main():
             if prediction.confidence >= PREDICTION_THRESHOLD and prediction.label in CLASS_TO_COLOR:
                 print(">>>", prediction.label ,CLASS_TO_COLOR[prediction.label])
                 rgb_led.color = CLASS_TO_COLOR[prediction.label] 
-                servo.max()
-                sleep(2)
-                servo.min()
+
+                bin.open()
+                sleep(5) # maybe detect movement
+                bin.close()
+
+                rgb_led.color = (0, 0, 0)  # Turn off LED
+
             else:
                 rgb_led.color = (0, 0, 0)  # Turn off LED
             # If prediction accuracy is below threshold, ask if user wants to retrain the model
@@ -64,16 +86,16 @@ def main():
                 
                 # Wait for the retrain button press within 5 seconds
                 if capture_button.wait_for_press(timeout=5):
-                    servo.max()
+                    bin.open()
                     distance = track_distance(ultrasonic)
                     label = perform_action(distance)
                     retrain_model(stub, image_data, label)
-                    servo.min()
+                    bin.close()
                     print("Model retrained successfully.")
                 else:
-                    servo.max()
+                    bin.open()
                     sleep(5)
-                    servo.min()
+                    bin.close()
                     print("Retrain option not selected.")
             else:
                 print("Prediction accuracy is above threshold. No retraining needed.")
