@@ -1,21 +1,26 @@
 import grpc
 import teste_pb2
 import teste_pb2_grpc
-#import picamera
 import io
 from gpiozero import Button, RGBLED, DistanceSensor,Servo
 from clientService import *
 from time import sleep
-
 from colorzero import Color
+
 # Define GPIO pin numbers 
 CAPTURE_BUTTON_PIN = 23  
 RETRAIN_BUTTON_PIN = 24  
 LED_RED_PIN = 18
 LED_GREEN_PIN = 13
 LED_BLUE_PIN = 12
+SERVO_PIN = 19
+US_ECHO_PIN = 17
+US_TRIGGER_PIN = 4
+
+# Fixed values
 MAX_VAL_SERVO = 1
 MIN_VAL_SERVO = -1
+MIN_DISTANCE = 0.25
 
 # Define prediction threshold
 PREDICTION_THRESHOLD = 70.0
@@ -23,8 +28,8 @@ PREDICTION_THRESHOLD = 70.0
 CLASS_TO_COLOR = {
     "Cardboard": (0, 0, 1),  
     "Glass": (0, 1, 0),      
-    "Metal": Color('orange'),
-    "Plastic": Color('orange') 
+    "Metal": Color('yellow'),
+    "Plastic": Color('yellow') 
 }
 
 class Bin:
@@ -52,33 +57,38 @@ def main():
         rgb_led = RGBLED(red=LED_RED_PIN, green=LED_GREEN_PIN, blue=LED_BLUE_PIN)
 
         # Create DistanceSensor object
-        ultrasonic = DistanceSensor(echo=17, trigger=4)
-        max_distance = ultrasonic.distance
+        ultrasonic = DistanceSensor(echo=US_ECHO_PIN, trigger=US_TRIGGER_PIN)
 
         # Create Servo object
-        servo = Servo(19)
+        servo = Servo(SERVO_PIN)
         servo.value = MAX_VAL_SERVO
 
         bin = Bin(servo)
 
         while True:
+            print(" ===== Smart bin is ready =====")
+            print("Press a button to continue...")
+            print()
             capture_button.wait_for_press()
             
             # Capture the image
             image_data = capture_image() 
             
             # Predict the image
+            print("Predicting image...")
             prediction = predict_image(stub, image_data)
-            print("Predicted class:", prediction)
+            print("---- Prediction ----")
+            print(prediction)
+            print()
             
-
             if prediction.confidence >= PREDICTION_THRESHOLD and prediction.label in CLASS_TO_COLOR:
-                print(">>>", prediction.label ,CLASS_TO_COLOR[prediction.label])
+                print(">>>", prediction.label)
                 rgb_led.color = CLASS_TO_COLOR[prediction.label] 
 
                 bin.open()
-                # clicar no botao para retreinar se necessario
-                distance = track_distance(ultrasonic, max_distance)
+
+                # TODO: wait for retraining button
+                distance = track_distance(ultrasonic, MIN_DISTANCE)
                 label = perform_action(distance)
                 print("Deposited in", label)
 
@@ -86,39 +96,33 @@ def main():
 
                 rgb_led.color = (0, 0, 0)  # Turn off LED
 
-            else:
-                rgb_led.color = (0, 0, 0)  # Turn off LED
-
-            # If prediction accuracy is below threshold, ask if user wants to retrain the model
-            if prediction.confidence < PREDICTION_THRESHOLD:
+            # If prediction accuracy is below threshold, retrain model
+            elif prediction.confidence < PREDICTION_THRESHOLD:
                 print("Prediction accuracy is below threshold.")
-                rgb_led.color = (1, 0, 0)
-                # print("Press the retrain button within 5 seconds to retrain the model.")
-                
-                # Wait for the retrain button press within 5 seconds
-                # if capture_button.wait_for_press(timeout=5):
-                #     bin.open()
-                #     distance = track_distance(ultrasonic, max_distance)
-                #     label = perform_action(distance)
-                #     retrain_model(stub, image_data, label)
-                #     bin.close()
-                #     print("Model retrained successfully.")
 
-                # else:
+                rgb_led.color = (1, 0, 0)  # Red LED
+
                 bin.open()
 
-                distance = track_distance(ultrasonic, max_distance)
+                distance = track_distance(ultrasonic, MIN_DISTANCE)
                 label = perform_action(distance)
+                rgb_led.color = CLASS_TO_COLOR[label]
                 print("Deposited in", label)
+
+                # retrain_model(stub, image_data, label)
+                print("Model went to retraining. It will predict better tomorrow.")
 
                 bin.close()
 
+                sleep(1)
+
                 rgb_led.color = (0, 0, 0)  # Turn off LED
 
-                # print("Retrain option not selected.")
-
             else:
-                print("Prediction accuracy is above threshold. No retraining needed.")
+                print("Something went wrong.")
+
+            print()
+            print()
 
 if __name__ == "__main__":
     main()
