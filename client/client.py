@@ -60,7 +60,6 @@ def main():
         servo.value = MAX_VAL_SERVO
 
         bin = Bin(servo)
-        servo.min()
 
         while True:
             capture_button.wait_for_press()
