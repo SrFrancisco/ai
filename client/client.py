@@ -36,6 +36,7 @@ class Bin:
         sleep(2)
     
     def close(self):
+        sleep(1)
         self.servo.value = MAX_VAL_SERVO
 
 
