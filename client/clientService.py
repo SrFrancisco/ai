@@ -37,6 +37,8 @@ def retrain_model(stub, image_data,label):
     response = stub.RetrainModel(request)
     print(response.message)
 
+def open_servo():
+    pass
 
 def perform_action(distance):
     # 0.09 - 0
