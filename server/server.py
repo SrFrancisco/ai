@@ -28,8 +28,8 @@ class TestService(teste_pb2_grpc.TestService):
         prediction = self.model.predict(image) # Predict
         
         predicted_class, predicted_accuracy = postprocess_prediction(prediction)
-
-        return teste_pb2.ImageResponse(label=predicted_class, confidence=predicted_accuracy)
+        print("predicted",predicted_class, "acc", predicted_accuracy)
+        return teste_pb2.ImageResponse(label=predicted_class, confidence=float(predicted_accuracy))
     
     def RetrainModel(self, request, context):
         image_data = request.image_data
@@ -47,7 +47,7 @@ def serve():
     model_path = '../simple_keras.keras'
     teste_pb2_grpc.add_TestServiceServicer_to_server(TestService(model_path), server)
     print("Started Server on")
-    server.add_insecure_port("localhost:5004")
+    server.add_insecure_port("0.0.0.0:5004")
     server.start()
     server.wait_for_termination()
 
