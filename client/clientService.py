@@ -37,9 +37,6 @@ def retrain_model(stub, image_data,label):
     response = stub.RetrainModel(request)
     print(response.message)
 
-def trigger_retrain(stub):
-    response = stub.DebugTriggerRetrain(teste_pb2.debugTriggerRetrainRequest())
-
 def open_servo():
     pass
 
