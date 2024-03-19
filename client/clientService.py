@@ -39,20 +39,24 @@ def retrain_model(stub, image_data,label):
 
 
 def perform_action(distance):
-    if distance <= 0.2: #change to correct range
-        return "Glass"
-    elif distance <= 0.4:
-        return "Cardboard"
-    else:
+    # 0.091 - 0
+    if distance <= 0.091:
         return "Plastic"
     
-def track_distance(ultrasonic):
-    current_distance = ultrasonic.distance
+    # 0.189 - 0.091
+    elif distance <= 0.189:
+        return "Cardboard"
+    
+    # 0.194 - 0.189
+    else:
+        return "Glass"
+    
+def track_distance(ultrasonic, max_distance):
     while True:
         new_distance = ultrasonic.distance
-        print(f"Distance: {new_distance:.2f} m")
-        if abs(new_distance - current_distance) > 0.1:
-            print(f"ChangedDistance: {new_distance:.2f} m")
+        print(f"Distance: {new_distance:.4f} m")
+        if abs(new_distance - max_distance) > 0.005:
+            print(f"ChangedDistance: {new_distance:.4f} m")
             return new_distance
         sleep(0.1)  # Delay to avoid excessive polling
         

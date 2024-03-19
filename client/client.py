@@ -14,8 +14,8 @@ RETRAIN_BUTTON_PIN = 24
 LED_RED_PIN = 18
 LED_GREEN_PIN = 13
 LED_BLUE_PIN = 12
-MAX_VAL_SERVO = 0.9
-MIN_VAL_SERVO = 0.1
+MAX_VAL_SERVO = 0.7
+MIN_VAL_SERVO = -0.7
 
 # Define prediction threshold
 PREDICTION_THRESHOLD = 70.0
@@ -51,6 +51,7 @@ def main():
 
         # Create DistanceSensor object
         ultrasonic = DistanceSensor(echo=17, trigger=4)
+        max_distance = ultrasonic.distance
 
         # Create Servo object
         servo = Servo(19)
@@ -68,36 +69,52 @@ def main():
             prediction = predict_image(stub, image_data)
             print("Predicted class:", prediction)
             
+
             if prediction.confidence >= PREDICTION_THRESHOLD and prediction.label in CLASS_TO_COLOR:
                 print(">>>", prediction.label ,CLASS_TO_COLOR[prediction.label])
                 rgb_led.color = CLASS_TO_COLOR[prediction.label] 
 
                 bin.open()
-                sleep(5) # maybe detect movement
+                # clicar no botao para retreinar se necessario
+                distance = track_distance(ultrasonic, max_distance)
+                label = perform_action(distance)
+                print("Deposited in", label)
+
                 bin.close()
 
                 rgb_led.color = (0, 0, 0)  # Turn off LED
 
             else:
                 rgb_led.color = (0, 0, 0)  # Turn off LED
+
             # If prediction accuracy is below threshold, ask if user wants to retrain the model
             if prediction.confidence < PREDICTION_THRESHOLD:
                 print("Prediction accuracy is below threshold.")
-                print("Press the retrain button within 5 seconds to retrain the model.")
+                rgb_led.color = (1, 0, 0)
+                # print("Press the retrain button within 5 seconds to retrain the model.")
                 
                 # Wait for the retrain button press within 5 seconds
-                if capture_button.wait_for_press(timeout=5):
-                    bin.open()
-                    distance = track_distance(ultrasonic)
-                    label = perform_action(distance)
-                    retrain_model(stub, image_data, label)
-                    bin.close()
-                    print("Model retrained successfully.")
-                else:
-                    bin.open()
-                    sleep(5)
-                    bin.close()
-                    print("Retrain option not selected.")
+                # if capture_button.wait_for_press(timeout=5):
+                #     bin.open()
+                #     distance = track_distance(ultrasonic, max_distance)
+                #     label = perform_action(distance)
+                #     retrain_model(stub, image_data, label)
+                #     bin.close()
+                #     print("Model retrained successfully.")
+
+                # else:
+                bin.open()
+
+                distance = track_distance(ultrasonic, max_distance)
+                label = perform_action(distance)
+                print("Deposited in", label)
+
+                bin.close()
+
+                rgb_led.color = (0, 0, 0)  # Turn off LED
+
+                # print("Retrain option not selected.")
+
             else:
                 print("Prediction accuracy is above threshold. No retraining needed.")
 
