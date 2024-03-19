@@ -54,6 +54,7 @@ def main():
 
         # Create Servo object
         servo = Servo(19)
+        servo.value = MAX_VAL_SERVO
 
         bin = Bin(servo)
 
