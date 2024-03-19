@@ -3,6 +3,7 @@ syntax = "proto3";
 service TestService {
   rpc PredictImage (ImageRequest) returns (ImageResponse);
   rpc RetrainModel (RetrainRequest) returns (RetrainResponse); 
+  rpc DebugTriggerRetrain (debugTriggerRetrainRequest) returns (debugTriggerRetrainResponse);
 }
 
 message ImageRequest {
