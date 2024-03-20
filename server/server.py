@@ -3,6 +3,7 @@ SERVER_PORT="0.0.0.0:5004"
 import grpc
 import logging
 import os
+from modelTrain import retrain_model
 # Suppress TensorFlow INFO and WARNING messages
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
@@ -46,13 +47,26 @@ class TestService(teste_pb2_grpc.TestService):
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    model_path = '../simple_keras.keras'
-    #model_path = '../server/retrained_model.keras'
-    teste_pb2_grpc.add_TestServiceServicer_to_server(TestService(model_path), server)
+    #model_path = '../simple_keras.keras'
+    model_path = '../server/retrained_model.keras'
+    service = TestService(model_path)
+    teste_pb2_grpc.add_TestServiceServicer_to_server(service, server)
     print("Started Server on", SERVER_PORT)
     server.add_insecure_port(SERVER_PORT)
     server.start()
-    server.wait_for_termination()
+
+    while True:
+        value = input("('retrain' or 'exit') ")
+        if value == 'retrain':
+            print("Training model")
+            retrain_model()
+            print("Updating model to use")
+            service.model = tf.keras.models.load_model(model_path)
+            print("Ready!")
+
+        elif value == 'exit':
+            server.stop(grace=True)   
+            return
 
 if __name__ == "__main__":
     serve()

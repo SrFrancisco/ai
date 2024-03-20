@@ -6,7 +6,7 @@ def train_model():
     import os
     #import cv2
 
-    DIR = "WasteImagesDataset/"
+    DIR = "../WasteImagesDataset/"
     IMG_SIZE = (256, 256)
     train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
         DIR,
@@ -34,18 +34,18 @@ def train_model():
     train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
     test_dataset = test_dataset.prefetch(buffer_size=AUTOTUNE)
 
-    ##from tensorflow.keras.layers import Rescaling, RandomFlip, RandomRotation
-    ##from tensorflow.keras.applications.inception_v3 import preprocess_input
-    ##from tensorflow.keras.layers import GlobalAveragePooling2D
-    ##
-    ##data_augmentation = tf.keras.Sequential([
-    ##    Rescaling(1./255),
-    ##    RandomFlip("horizontal_and_vertical"),
-    ##    RandomRotation(0.2),
-    ##])
+    from keras.layers import Rescaling, RandomFlip, RandomRotation
+    from keras.applications.inception_v3 import preprocess_input
+    from keras.layers import GlobalAveragePooling2D
+    
+    data_augmentation = tf.keras.Sequential([
+        Rescaling(1./255),
+        RandomFlip("horizontal_and_vertical"),
+        RandomRotation(0.2),
+    ])
 
     preprocess_input = preprocess_input
-    #global_average_layer = GlobalAveragePooling2D()
+    global_average_layer = GlobalAveragePooling2D()
 
     # Define your model architecture
     baseModel = tf.keras.applications.ResNet152(input_shape=(256, 256, 3), weights='imagenet',
@@ -86,10 +86,11 @@ def retrain_model():
     import numpy as np
 
     # Load the saved model
-    model = tf.keras.models.load_model("../simple_keras.keras")
+    #model = tf.keras.models.load_model("../simple_keras.keras")
+    model = tf.keras.models.load_model("retrained_model.keras")
 
     DIR = "../WasteImagesDataset/"
-    NEW_IMAGE_DIR = "../NewImageDataset/"
+    NEW_IMAGE_DIR = "../NewImagesDataset/"
     IMG_SIZE = (256, 256)
 
     train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
@@ -118,17 +119,18 @@ def retrain_model():
     train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
     test_dataset = test_dataset.prefetch(buffer_size=AUTOTUNE)
 
-    from keras.layers import Rescaling, RandomFlip, RandomRotation
+    from keras.layers import Rescaling, RandomFlip, RandomRotation, RandomBrightness, RandomContrast
     from keras.applications.inception_v3 import preprocess_input
     from keras.layers import GlobalAveragePooling2D
-    from keras.preprocessing.image import ImageDataGenerator
     
     data_augmentation = tf.keras.Sequential([
         RandomFlip("horizontal"),
         RandomRotation(0.2),
+        RandomContrast(0.2),
+        RandomBrightness(0.2)
     ])
 
-    train_dataset = train_dataset.map(lambda x, y: (data_augmentation(x), y))
+    train_dataset = train_dataset.map(lambda x, y: (data_augmentation(x, training=True), y))
 
     model.trainable = False
 
@@ -156,4 +158,5 @@ def retrain_model():
     model.save("retrained_model.keras")
 
 if __name__ == "__main__":
+    #train_model()
     retrain_model()

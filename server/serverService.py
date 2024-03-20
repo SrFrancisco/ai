@@ -3,6 +3,7 @@ import os
 from PIL import Image
 import datetime
 
+
 classes = ['Cardboard', 'Glass', 'Metal', 'Plastic']
 
 TRAINING_DATASET_PATH="../NewImagesDataset" # do not put last /
@@ -29,6 +30,3 @@ def add_image_and_label_to_dataset(image:Image, label:str):
         os.makedirs(TRAINING_DATASET_PATH+"/"+class_, exist_ok=True)
     image.save(TRAINING_DATASET_PATH+"/"+label+"/"+label+datetime.datetime.now().strftime("%d%m%Y%H%M%S")+".jpg")
 
-def retrain_model():
-    # Logic to retrain your model goes here
-    pass
