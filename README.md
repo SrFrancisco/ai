@@ -85,11 +85,16 @@ This part has to be done in **both** the remote computer and the raspberry pi
 ### For the computer (server)
 ```sh
 cd server
+```
+The server uses pre-trained models (`retrained_model.keras`). If this file is not already present we will need to generate it:
+1. Download the Waste Image Dataset from [here](https://github.com/VIJAY-GADRE/Waste_Classification_using_ResNet152/tree/main) and place the folder WasteImagesDataset in the root of this repository
+2. now inside the server folder run `python modelTrain.py` (heavy operation, may take several hours)
+
+To run the server:
+```sh
 python server.py
 ```
 **NOTE**: The model may take a few minutes to initialize. Once the server is ready it will show `Started Server on <address>`
-
-> The server uses pre-trained models (`retrained_model.keras`). The code to build this model from scratch can be run with `python modelTrain.py` (heavy operation, requires `WasteImagesDataset.zip` to be extracted).
 
 ### For the raspberry pi (client):
 ```sh

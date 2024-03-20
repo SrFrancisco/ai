@@ -79,7 +79,7 @@ def train_model():
     history = model.fit(train_dataset, validation_data=test_dataset, epochs=epochs, callbacks=[callbacks])
 
     # Save the trained model
-    model.save("simple_keras.keras")
+    model.save("retrained_model.keras")
 
 def retrain_model():
     import tensorflow as tf
