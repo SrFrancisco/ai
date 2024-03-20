@@ -158,5 +158,5 @@ def retrain_model():
     model.save("retrained_model.keras")
 
 if __name__ == "__main__":
-    #train_model()
-    retrain_model()
+    train_model()
+    #retrain_model()
