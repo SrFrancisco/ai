@@ -34,15 +34,15 @@ class TestService(teste_pb2_grpc.TestService):
         return teste_pb2.ImageResponse(label=predicted_class, confidence=float(predicted_accuracy))
     
     def RetrainModel(self, request, context):
+        print("Received image")
         image_data = request.image_data
         label = request.label
         image = Image.open(BytesIO(image_data))
 
         add_image_and_label_to_dataset(image, label)
 
-        retrain_model()
-
-        return teste_pb2.RetrainResponse(message="Model retrained successfully.")
+        print("Image was added to backlog")
+        return teste_pb2.RetrainResponse(message="Image added to the training data")
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

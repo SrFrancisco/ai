@@ -111,8 +111,8 @@ def main():
                 rgb_led.color = CLASS_TO_COLOR[label]
                 print("Deposited in", label)
 
-                # retrain_model(stub, image_data, label)
-                print("Model went to retraining. It will predict better tomorrow.")
+                retrain_model(stub, image_data, label)
+                print("Model went to retraining. This will make it predict better.")
 
                 bin.close()
 
