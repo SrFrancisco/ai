@@ -1,3 +1,5 @@
+SERVER_PORT="0.0.0.0:5004"
+
 import grpc
 import logging
 import os
@@ -45,9 +47,10 @@ class TestService(teste_pb2_grpc.TestService):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     model_path = '../simple_keras.keras'
+    #model_path = '../server/retrained_model.keras'
     teste_pb2_grpc.add_TestServiceServicer_to_server(TestService(model_path), server)
-    print("Started Server on")
-    server.add_insecure_port("0.0.0.0:5004")
+    print("Started Server on", SERVER_PORT)
+    server.add_insecure_port(SERVER_PORT)
     server.start()
     server.wait_for_termination()
 

@@ -1,3 +1,5 @@
+SERVER_PORT="192.168.30.158:5004"
+
 import grpc
 import teste_pb2
 import teste_pb2_grpc
@@ -46,7 +48,7 @@ class Bin:
 
 
 def main():
-    with grpc.insecure_channel("192.168.30.158:5004") as channel:
+    with grpc.insecure_channel(SERVER_PORT) as channel:
         stub = teste_pb2_grpc.TestServiceStub(channel)
         
         # Create Button objects
