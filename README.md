@@ -1,23 +1,17 @@
 # Smart Bin
 
-We've developed a recycling bin with a camera capable of recognizing and classifying trash
+We've developed a raspberry pi based recycling bin with a camera capable of recognizing and classifying trash.
 
-> Begin with an introductory paragraph that tells readers the purpose of your solution with hardware and software and its major benefits. 
-> Give them a summary of the information you will include in this file using clearly defined sections.
+This README will explain:
+1. The hardware and software requirements
+2. How to set it up (both the electric circuits and software)
+3. Information about it's operation.
 
 ## General Information
 
-Our objective is to incentivize people to recycle by making it easier for people to correctly separate trash ... 
-
-> This section expands on the introductory paragraph to give readers a better understanding of your project. 
-> Include a brief description and answer the question, "what problem does this project solve?"
+Our objective is to incentivize people to recycle by making it easier for people to correctly separate trash. The product will tell the user the correct place to put it's recycling trash (cardboard, metal/plastic and glass)
 
 ## Built With
-
-> Include an outline of the technologies in the project, such as hardware components (Arduino/Raspberry Pi), operating systems, programming language, database, libraries.
-
-> Include links to any related projects (for example, whether this API has corresponding iOS or Android clients), links to online tools related to the application (such as the project web site, the shared file storage).
-> If you mention something, please provide links.
 
 ### Hardware
 
@@ -46,6 +40,17 @@ These instructions will get you a copy of the project up and running on for test
 
 2. Then connect the webcam to the raspberry pi (usb 2.0)
 3. Place the ultrasonic sensor in the box of the trash can. Make sure there is a direct line of sight with the other side of the box
+   > **NOTE**: The ranges of the ultrasonic sensor are very dependent on the box used, if it's necessary to make any changes please edit these constants from `clientService.py`
+   > ```py
+   > TRASH_DISTANCE = 0.25
+   > CLOSER_PLASTIC = 0
+   > FARTHER_PLASTIC = 0.09
+   > CLOSER_CARDBOARD = 0.09
+   > FARTHER_CARDBOARD = 0.19
+   > CLOSER_GLASS = 0.19
+   > FARTHER_GLASS = 0.25
+   > ```
+   > The program in `util/testUltra.py` prints the reading of the sensor
 4. Tape a metal wire to the servo and place it in a position where it can open the lid
 5. Connect power to the raspberry pi
 
@@ -53,16 +58,13 @@ These instructions will get you a copy of the project up and running on for test
 
 Please ensure that both the remote computer (server) and raspberry pi (client) are in the same network and reachable
 
-> In this section include detailed instructions for installing additiona software the application is dependent upon (such as PostgreSQL database, for example).
-> 
-> ```
-> installation command
-> ```
->
+We tested the server program in linux environments
+
+The client uses GPIO functions and therefore can only be executed in a raspberry pi
 
 ### Installation
 
-This part has to be done in both the remote computer and the raspberry pi
+This part has to be done in **both** the remote computer and the raspberry pi
 
 1. Download the repository
 2. Install the virtual environment and packages with:
@@ -80,14 +82,14 @@ This part has to be done in both the remote computer and the raspberry pi
 
 **IMPORTANT!** It may be necessary to change the address and port of the server, this can be done by editing the variable `SERVER_PORT` at the top of the `client.py` and `server.py` files
 
-> In the server folder there should be the `retrained_model.keras` which will be used by the server, this model has gone through limited retraining for testing proposes. If is necessary to use the originally trained model one could run `python modelTrain.py` or replace the file with the `simple_keras.keras` model in the parent folder 
-
 ### For the computer (server)
 ```sh
 cd server
 python server.py
 ```
-**NOTE**: The model may take a few minutes to initialize. Once the server is ready it will show `Started Server`
+**NOTE**: The model may take a few minutes to initialize. Once the server is ready it will show `Started Server on <address>`
+
+> The server uses pre-trained models (`retrained_model.keras`). The code to build this model from scratch can be run with `python modelTrain.py` (heavy operation).
 
 ### For the raspberry pi (client):
 ```sh
@@ -97,24 +99,21 @@ python client.py
 
 ### Testing
 
-> Explain how to run the tests for this system.
-> 
-> Give users explicit instructions on how to run all necessary tests. 
-> 
-> Explain what these tests do and why
-> 
-> ```
-> Give an example command
-> ```
+We haven't implemented any unit or integration testing. There are, however, some utilities that may help test and debug the circuit/code:
+```sh
+cd util
+python testServo.py # this testes the servo movement (from MIN pos to MAX)
+python testUltra.py # this prints the output of the ultrasonic sensor (1s interval)
+```
 
 ## Demo
 When it's all ready, you should have a setup like this:
 
-*Colocar imagem*
+![](./docs/box.jpeg)
 
+When someone wants to deposit trash it places it under the webcam and clicks on the left button. This will make the camera take a photo. Then the lid will open and the RGB Led will present the corresponding trash code (blue -- paper, yellow -- plastic and metal, green -- glass). Once the user deposits the trash the lid will close.
 
-> Give a tour of the best features of the application.
-> Add screenshots when relevant.
+If the machine learning model is not confident in it's results or if the user notices the model made a mistake (by clicking in the button on the right), the lid will open and a photo of the product + the location where the user placed it will be sent to the remote machine as training data. Once more photos are collected (absolute minimum of 10) the model can be further trained in these images (hopefully) making it more accurate
 
 ## Additional Information
 
