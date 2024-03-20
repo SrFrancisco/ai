@@ -78,7 +78,9 @@ This part has to be done in both the remote computer and the raspberry pi
    make compile
    ```
 
-**NOTE**: It may be necessary to change the address and port of the server, this can be done by editing the variable `SERVER_PORT` at the top of the `client.py` and `server.py` files
+**IMPORTANT!** It may be necessary to change the address and port of the server, this can be done by editing the variable `SERVER_PORT` at the top of the `client.py` and `server.py` files
+
+> In the server folder there should be the `retrained_model.keras` which will be used by the server, this model has gone through limited retraining for testing proposes. If is necessary to use the originally trained model one could run `python modelTrain.py` or replace the file with the `simple_keras.keras` model in the parent folder 
 
 ### For the computer (server)
 ```sh

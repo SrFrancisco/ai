@@ -7,7 +7,6 @@ install:
 	@echo python virtual environment with
 	@echo    source .venv/bin/activate
 	@echo 
-	@echo It's also necessary to compile the protos
 
 compile:
 	python3 -m grpc_tools.protoc -I./protos --python_out=./server --pyi_out=./server --grpc_python_out=./server ./protos/teste.proto
