@@ -48,7 +48,7 @@ class TestService(teste_pb2_grpc.TestService):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     #model_path = '../simple_keras.keras'
-    model_path = '../server/retrained_model.keras'
+    model_path = 'retrained_model.keras'
     service = TestService(model_path)
     teste_pb2_grpc.add_TestServiceServicer_to_server(service, server)
     print("Started Server on", SERVER_PORT)
