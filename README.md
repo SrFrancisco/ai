@@ -36,7 +36,7 @@ These instructions will get you a copy of the project up and running on for test
 
 ### Assembly Instructions
 1. Assemble the electronics according to this diagram:
-![](./docs/diagram.png)
+![](./assets/diagram.png)
 
 2. Then connect the webcam to the raspberry pi (usb 2.0)
 3. Place the ultrasonic sensor in the box of the trash can. Make sure there is a direct line of sight with the other side of the box
@@ -89,7 +89,7 @@ python server.py
 ```
 **NOTE**: The model may take a few minutes to initialize. Once the server is ready it will show `Started Server on <address>`
 
-> The server uses pre-trained models (`retrained_model.keras`). The code to build this model from scratch can be run with `python modelTrain.py` (heavy operation).
+> The server uses pre-trained models (`retrained_model.keras`). The code to build this model from scratch can be run with `python modelTrain.py` (heavy operation, requires `WasteImagesDataset.zip` to be extracted).
 
 ### For the raspberry pi (client):
 ```sh
@@ -109,7 +109,7 @@ python testUltra.py # this prints the output of the ultrasonic sensor (1s interv
 ## Demo
 When it's all ready, you should have a setup like this:
 
-![](./docs/box.jpeg)
+![](./assets/box.jpeg)
 
 When someone wants to deposit trash it places it under the webcam and clicks on the left button. This will make the camera take a photo. Then the lid will open and the RGB Led will present the corresponding trash code (blue -- paper, yellow -- plastic and metal, green -- glass). Once the user deposits the trash the lid will close.
 
