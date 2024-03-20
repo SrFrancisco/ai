@@ -6,6 +6,15 @@ import subprocess
 from gpiozero import Button
 from time import sleep
 
+# Trash cans distances (meters)
+TRASH_DISTANCE = 0.25
+CLOSER_PLASTIC = 0
+FARTHER_PLASTIC = 0.09
+CLOSER_CARDBOARD = 0.09
+FARTHER_CARDBOARD = 0.19
+CLOSER_GLASS = 0.19
+FARTHER_GLASS = 0.25
+
 def capture_image():
     command = ["fswebcam", "-r", "640x480", "--no-banner", "image1.jpg"]
     
@@ -34,23 +43,24 @@ def retrain_model(stub, image_data,label):
     response = stub.RetrainModel(request)
     print(response.message)
 
-def open_servo():
-    pass
-
-def perform_action(distance):
-    if 0 <= distance <= 0.09:
+def perform_action(ultrasonic, distance):
+    if CLOSER_PLASTIC <= distance <= FARTHER_PLASTIC:
         return "Plastic"
     
-    elif 0.09 < distance <= 0.19:
+    elif CLOSER_CARDBOARD < distance <= FARTHER_CARDBOARD:
         return "Cardboard"
     
-    else:
+    elif CLOSER_GLASS < distance <= FARTHER_GLASS:
         return "Glass"
     
-def track_distance(ultrasonic, min_distance):
+    else:
+        new_distance = track_distance(ultrasonic)
+        return perform_action(ultrasonic, new_distance)
+    
+def track_distance(ultrasonic):
     while True:
         new_distance = ultrasonic.distance
-        if new_distance < min_distance:
+        if new_distance < TRASH_DISTANCE:
             print(f"Object detected: {new_distance:.4f} m")
             return new_distance
         sleep(0.4)  # Delay to avoid excessive polling and false positives

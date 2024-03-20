@@ -31,7 +31,7 @@ Our objective is to incentivize people to recycle by making it easier for people
 * [Raspberry Pi OS](https://www.raspberrypi.com/software/) - Operating system
 * [Python](https://www.python.org/) - Programming Language and Platform
 * [Tensorflow](https://www.tensorflow.org/) - Machine learning framework
-* [Base dataset](https://www.kaggle.com/datasets/mostafaabla/garbage-classification/data)
+* [Base dataset](https://github.com/VIJAY-GADRE/Waste_Classification_using_ResNet152/tree/main)
 * [gRPC](https://grpc.io/) - For communication
 * [gpiozero](https://gpiozero.readthedocs.io/en/latest/) - Python library for controlling GPIO Pins
 
@@ -106,25 +106,18 @@ python client.py
 > ```
 
 ## Demo
+When it's all ready, you should have a setup like this:
+
+*Colocar imagem*
+
 
 > Give a tour of the best features of the application.
 > Add screenshots when relevant.
-
-## Deployment
-
-> Add additional notes about how to deploy this on a host or a cloud provider.
-> 
-> Mention virtualization/container tools and commands.
-> 
-> ```
-> Give an example command
-> ```
-> Provide instructions for connecting to servers and tell clients how to obtain necessary permissions.
 
 ## Additional Information
 
 ### Authors
 
-* **Francisco Carvalho** ist199219
 * **Adriana Nunes** ist199172
+* **Francisco Carvalho** ist199219
 * **Martim Baltazar** ist199280

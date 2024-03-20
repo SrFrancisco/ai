@@ -22,7 +22,6 @@ US_TRIGGER_PIN = 4
 # Fixed values
 MAX_VAL_SERVO = 1
 MIN_VAL_SERVO = -1
-MIN_DISTANCE = 0.25
 
 # Define prediction threshold
 PREDICTION_THRESHOLD = 70.0
@@ -46,14 +45,24 @@ class Bin:
         sleep(1)
         self.servo.value = MAX_VAL_SERVO
 
+global should_retrain
+def mistake():
+    global should_retrain
+    should_retrain = True
+    print("interruption", should_retrain)
+
 
 def main():
+    global should_retrain
+    should_retrain = False
+
     with grpc.insecure_channel(SERVER_PORT) as channel:
         stub = teste_pb2_grpc.TestServiceStub(channel)
         
         # Create Button objects
         capture_button = Button(CAPTURE_BUTTON_PIN)
         retrain_button = Button(RETRAIN_BUTTON_PIN)
+        retrain_button.when_pressed = mistake
 
         # Create RGBLED object
         rgb_led = RGBLED(red=LED_RED_PIN, green=LED_GREEN_PIN, blue=LED_BLUE_PIN)
@@ -75,6 +84,9 @@ def main():
             
             # Capture the image
             image_data = capture_image() 
+
+            # Clear variable of mistake
+            should_retrain = False
             
             # Predict the image
             print("Predicting image...")
@@ -89,10 +101,13 @@ def main():
 
                 bin.open()
 
-                # TODO: wait for retraining button
-                distance = track_distance(ultrasonic, MIN_DISTANCE)
-                label = perform_action(distance)
+                distance = track_distance(ultrasonic)
+                label = perform_action(ultrasonic, distance)
                 print("Deposited in", label)
+
+                if (should_retrain):
+                    retrain_model(stub, image_data, label)
+                    print("Model went to retraining. This will make it predict better.")
 
                 bin.close()
 
@@ -106,8 +121,8 @@ def main():
 
                 bin.open()
 
-                distance = track_distance(ultrasonic, MIN_DISTANCE)
-                label = perform_action(distance)
+                distance = track_distance(ultrasonic)
+                label = perform_action(ultrasonic, distance)
                 rgb_led.color = CLASS_TO_COLOR[label]
                 print("Deposited in", label)
 
